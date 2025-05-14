@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained('categories')->onDelete('restrict');
             $table->foreignId('models_id')->constrained('models')->onDelete('restrict');
             $table->string('counter')->default('0');
-            $table->date('purchase_date');
+            $table->date('purchase_date', 4);
             $table->timestamps();
         });
     }

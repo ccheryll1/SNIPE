@@ -10,6 +10,10 @@ use App\Models\Actionlog;
 use App\Http\Requests\UploadFileRequest;
 use Illuminate\Support\Facades\Log;
 use App\Models\Asset;
+use App\Models\CustomField;
+use App\Models\Category;
+use App\Models\Models;
+
 use App\Models\AssetModel;
 use App\Models\CheckoutRequest;
 use App\Models\Company;
@@ -31,6 +35,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use TypeError;
+
 
 /**
  * This class controls all actions related to assets for
@@ -99,7 +104,62 @@ class AssetsController extends Controller
      */
     public function store(ImageUploadRequest $request) : RedirectResponse
     {
-        $this->authorize(Asset::class);
+
+         // Validasi data dari form
+        $data = $request->validate([
+            'company_id' => 'required|exists:companies,id',
+            'department_id' => 'required|exists:departments,id',
+            'category_id' => 'required|exists:categories,id',
+            'custom_fields_id' => 'required|exists:subcategories,id',
+            'purchase_date' => 'required|date',
+        ]);
+
+        // Ambil kode dari relasi
+        $company = Company::find($data['company_id']);
+        $department = Department::find($data['department_id']);
+        $category = Category::find($data['category_id']);
+        $subcategory = Subcategory::find($data['custom_fields_id']);
+
+        // Ambil bulan dan tahun dari tanggal pembelian
+        $purchaseDate = Carbon::parse($data['purchase_date']);
+        $monthYear = $purchaseDate->format('my'); // Contoh: 0524
+
+        // Ambil atau bikin counter berdasarkan kombinasi company, department, category, models, dan month_year
+        $counter = GenerateTag::firstOrCreate(
+            [
+                'company_id' => $data['company_id'],
+                'department_id' => $data['department_id'],
+                'category_id' => $data['category_id'],
+                'models_id' => $data['custom_fields_id'],
+                'purchase_date' => $monthYear,
+            ]
+        );
+
+        // Tambah nomor urut
+        $counter->increment('counter');
+        $runningNumber = str_pad($counter->counter, 3, '0', STR_PAD_LEFT); // Contoh: 001, 002, dst
+
+        // Generate asset tag
+        $assetTag = "{$company->code}{$custom_fields->code}-{$category->code}{$models->code}-{$runningNumber}-{$purchase_date}";
+
+        // Data buat disimpan
+        $assetData = [
+            'company_id' => $data['company_id'],
+            'department_id' => $data['department_id'],
+            'category_id' => $data['category_id'],
+            'custom_fields_id' => $data['custom_fields_id'],
+            'purchase_date' => $purchaseDate,
+            'asset_tag' => $assetTag,
+        ];
+
+        // Simpan atau update aset
+        $asset = $request->id ? Asset::findOrFail($request->id) : new Asset();
+        $asset->fill($assetData);
+        $asset->save();
+
+        // Redirect
+        return redirect()->route('assets.edit', $asset->id)->with('success', 'Aset berhasil disimpan!');
+        
 
         // There are a lot more rules to add here but prevents
         // errors around `asset_tags` not being present below.
@@ -251,6 +311,15 @@ class AssetsController extends Controller
             ->with('item', $asset)
             ->with('statuslabel_list', Helper::statusLabelList())
             ->with('statuslabel_types', Helper::statusTypeList());
+
+            $asset = $id ? Asset::with(['company', 'custom_fields', 'category', 'models'])->findOrFail($id) : new Asset();
+            $companies = Company::all();
+            $custom_fields = CustomField::all();
+            $categories = Category::all();
+            $models = AssetModel::all();
+
+            return view('hardware.edit', compact('asset', 'companies', 'custom_fields', 'categories', 'models'));
+
     }
 
 

@@ -21,23 +21,25 @@
 
 
   <!-- Asset Tag -->
-  <div class="form-group {{ $errors->has('asset_tag') ? ' has-error' : '' }}">
-    <label for="asset_tag" class="col-md-3 control-label">{{ trans('admin/hardware/form.tag') }}</label>
+
+  
+  <!-- <div class="form-group {{ $errors->has('asset_tag') ? ' has-error' : '' }}">
+    <label for="asset_tag" class="col-md-3 control-label">{{ trans('admin/hardware/form.tag') }}</label> -->
 
 
 
-      @if  ($item->id)
+      <!-- @if  ($item->id) -->
           <!-- we are editing an existing asset,  there will be only one asset tag -->
-          <div class="col-md-7 col-sm-12">
+          <!-- <div class="col-md-7 col-sm-12">
 
           <input class="form-control" type="text" name="asset_tags[1]" id="asset_tag" value="{{ old('asset_tag', $item->asset_tag) }}" required>
               {!! $errors->first('asset_tags', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
               {!! $errors->first('asset_tag', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
           </div>
-      @else
+      @else -->
           <!-- we are creating a new asset - let people use more than one asset tag -->
-          <div class="col-md-7 col-sm-12">
-              <input class="form-control" type="text" name="asset_tags[1]" id="asset_tag" value="{{ old('asset_tags.1', \App\Models\Asset::autoincrement_asset()) }}" required>
+          <!-- <div class="col-md-7 col-sm-12">
+              <input disabled class="form-control" type="text" name="asset_tags[1]" id="asset_tag" value="{{ old('asset_tags.1', \App\Models\Asset::autoincrement_asset()) }}" required>
               {!! $errors->first('asset_tags', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
               {!! $errors->first('asset_tag', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
           </div>
@@ -45,9 +47,9 @@
               <button class="add_field_button btn btn-default btn-sm">
                   <x-icon type="plus" />
               </button>
-          </div>
-      @endif
-  </div>
+          </div> -->
+      <!-- @endif -->
+  <!-- </div> -->
 
     @include ('partials.forms.edit.serial', ['fieldname'=> 'serials[1]', 'old_val_name' => 'serials.1', 'translated_serial' => trans('admin/hardware/form.serial')])
 
